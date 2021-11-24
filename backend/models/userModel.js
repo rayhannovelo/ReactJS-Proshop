@@ -37,7 +37,6 @@ userSchema.pre('save', async function (next) {
   }
 
   const salt = await bycrpt.genSalt(10)
-  console.log(salt)
   this.password = await bycrpt.hash(this.password, salt)
 })
 
