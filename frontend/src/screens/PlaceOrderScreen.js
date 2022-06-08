@@ -1,12 +1,12 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Col, Card, Button, Form, ListGroup, Row, Image } from 'react-bootstrap'
+import { Col, Card, Button, ListGroup, Row, Image } from 'react-bootstrap'
 import CheckoutSteps from '../components/CheckoutSteps'
 import Message from '../components/Message'
-import { savePaymentMethod } from '../actions/cartActions'
+import { createOrder } from '../actions/orderActions'
 
-const PaymentScreen = ({ history }) => {
+const PlaceOrderScreen = ({ history }) => {
   const cart = useSelector((state) => state.cart)
   const { cartItems, shippingAddress, paymentMethod } = cart
 
@@ -34,9 +34,29 @@ const PaymentScreen = ({ history }) => {
 
   const dispatch = useDispatch()
 
+  const orderCreate = useSelector((state) => state.orderCreate)
+  const { order, success, error } = orderCreate
+
+  useEffect(() => {
+    if (success) {
+      history.push(`/order/${order._id}`)
+    }
+    // eslint-disable-next-line
+  }, [history, success, order])
+
   const submitHandler = (e) => {
     e.preventDefault()
-    //dispatch(savePaymentMethod({ paymentMethod }))
+    dispatch(
+      createOrder({
+        orderItems: cart.cartItems,
+        shippingAddress,
+        paymentMethod,
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice,
+      })
+    )
     //history.push('/placeorder')
   }
 
@@ -50,7 +70,7 @@ const PaymentScreen = ({ history }) => {
               <h2>Shipping Address</h2>
               <p>
                 <strong>Address: </strong>
-                {shippingAddress.address}, {shippingAddress.city} ,
+                {shippingAddress.address}, {shippingAddress.city},
                 {shippingAddress.postalCode}, {shippingAddress.country}
               </p>
             </ListGroup.Item>
@@ -128,6 +148,9 @@ const PaymentScreen = ({ history }) => {
                 </Row>
               </ListGroup.Item>
               <ListGroup.Item>
+                {error && <Message variant='danger'>{error}</Message>}
+              </ListGroup.Item>
+              <ListGroup.Item>
                 <Button
                   type='button'
                   className='btn-block'
@@ -145,4 +168,4 @@ const PaymentScreen = ({ history }) => {
   )
 }
 
-export default PaymentScreen
+export default PlaceOrderScreen
